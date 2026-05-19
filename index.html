@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Khodam Dalam Dirimu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #2b1055 0%, #000000 100%);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.3);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #f8a5c2, #786fa6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #b2bec3;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #786fa6;
+            box-shadow: 0 0 15px rgba(120, 111, 166, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(45deg, #e15f41, #c44569);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(225, 95, 65, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(225, 95, 65, 0.6);
+        }
+
+        #loading {
+            display: none;
+            margin-top: 25px;
+            font-style: italic;
+            color: #f8a5c2;
+            animation: pulse 1s infinite;
+        }
+
+        #resultArea {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            animation: fadeIn 0.5s;
+        }
+
+        .khodam-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f1c40f;
+            margin: 10px 0;
+            text-transform: capitalize;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1> Cek Khodam Pendamping</h1>
+        <p>Masukkan namamu untuk melihat entitas (kocak & ngeselin) apa yang mendampingimu selama ini!</p>
+
+        <input type="text" id="namaInput" placeholder="Ketik nama kamu di sini..." autocomplete="off">
+        <button onclick="mulaiCek()">Terawang Sekarang</button>
+
+        <div id="loading">Membuka portal gaib... </div>
+
+        <div id="resultArea">
+            <p style="margin-bottom: 0;">Khodam pendamping <span id="namaUser" style="font-weight:bold; color:white;"></span> adalah:</p>
+            <div class="khodam-name" id="hasilKhodam"></div>
+            <p id="deskripsiKhodam" style="font-size: 0.85rem; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <script>
+        // DAFTAR 200 KHODAM KOCAK & NGESELIN
+        const daftarKhodam = [
+            // --- 100 Variabel Lama (Original) ---
+            { nama: "Macan Cisewu", desc: "Berwajah garang tapi aslinya suka senyum dan bikin orang ketawa." },
+            { nama: "Knalpot Mio Mber", desc: "Suka berisik, gampang emosi, tapi tenaganya kurang." },
+            { nama: "Naga Indosiar", desc: "Suka drama, kalau terbang pakai efek CGI tahun 2000an." },
+            { nama: "Tutup Termos", desc: "Bisa menahan panasnya omongan tetangga, sangat fungsional." },
+            { nama: "Kucing Oren", desc: "Bar-bar, tukang cari ribut, tapi selalu lolos dari masalah." },
+            { nama: "CCTV Perempatan", desc: "Tahu segala gosip dan aib temen, matanya ada di mana-mana." },
+            { nama: "Kosong (Tidak Ada)", desc: "Kamu orangnya lurus-lurus aja, makhluk halus aja males deketin." },
+            { nama: "Panci Gosong", desc: "Pekerja keras, sering tersakiti tapi tetap kuat digunakan." },
+            { nama: "Cicak Kayang", desc: "Suka pamer skill yang nggak berguna di tongkrongan." },
+            { nama: "Kaleng Khong Guan Isi Rengginang", desc: "Suka ngasih harapan palsu ke orang lain." },
+            { nama: "Sendal Swallow Putus", desc: "Sering diinjek-injek kehidupan tapi tetep berusaha bertahan pakai peniti." },
+            { nama: "Charger Diselotip", desc: "Ringkih, harus ditekuk di sudut tertentu baru bisa berfungsi maksimal." },
+            { nama: "Headset Mati Sebelah", desc: "Cuma bisa dengerin omongan orang dari satu sisi aja." },
+            { nama: "Kipas Angin Bunyi Tek-Tek", desc: "Suka ngeluh dan berisik kalau disuruh kerja keras." },
+            { nama: "Rice Cooker Lupa Dicolok", desc: "Udah nunggu lama-lama, eh ternyata usahanya sia-sia." },
+            { nama: "Ibu-ibu Sein Kiri Belok Kanan", desc: "Sangat susah ditebak, keputusannya sering bikin orang jantungan." },
+            { nama: "Tukang Bakso Bawa HT", desc: "Suka mantau situasi diam-diam, intel sejati di circle-nya." },
+            { nama: "Karet Gelang Nasi Bungkus", desc: "Elastis menghadapi masalah, tapi kalau putus pedih banget." },
+            { nama: "Seblak Ceker Level 10", desc: "Bikin mules, bikin emosi, tapi selalu bikin orang kangen." },
+            { nama: "Gelas Kaca Hadiah Sabun", desc: "Kelihatan murahan tapi paling awet dibanding yang mahal." },
+            { nama: "Motor Vario Lampu Jauh", desc: "Suka bikin silau dan menyakiti mata orang yang menatap masa depannya." },
+            { nama: "Odeng Indomaret", desc: "Selalu ada saat lapar melanda di tengah malam, pahlawan tanpa tanda jasa." },
+            { nama: "Remote TV Hilang", desc: "Sering dicariin pas dibutuhin, tapi pas gak dibutuhin tiba-tiba nongol." },
+            { nama: "Ujung Solasi Bening", desc: "Susah banget ditemuin ujungnya, bikin orang emosi sendiri." },
+            { nama: "Plastik Kresek Hitam", desc: "Misterius, nggak ada yang tahu isi aslinya apa." },
+            { nama: "Air Galon Sisa Dikit", desc: "Bikin orang males ganti, cuma nungguin siapa yang bakal berkorban." },
+            { nama: "Baterai Jam Dinding Digigit", desc: "Terus dipaksa kerja walaupun energinya udah mau habis." },
+            { nama: "Ayam Kampus", desc: "Suka nyari ilmu sampai tengah malam." },
+            { nama: "Uang Kembalian Permen", desc: "Sering diremehkan, padahal kalau dikumpulin bisa jadi berharga." },
+            { nama: "Sabun Batang Jatuh", desc: "Penuh resiko, orang pada takut kalau dekat-dekat." },
+            { nama: "Tuyul Magang", desc: "Niatnya mau nyolong duit tapi malah ketiduran di depan TV." },
+            { nama: "Babi Ngepet Kesasar", desc: "Udah capek-capek niup lilin eh malah masuk ke minimarket." },
+            { nama: "Kuntilanak Keselek", desc: "Lagi asik ketawa horor eh malah batuk-batuk, gagal serem." },
+            { nama: "Pocong Ngesot", desc: "Tali pocongnya kendor jadi gak bisa loncat, akhirnya pasrah ngesot." },
+            { nama: "Genderuwo Patah Hati", desc: "Badan doang gede, tapi aslinya cowok sadboy yang suka dengerin lagu galau." },
+            { nama: "Jelangkung Bete", desc: "Datang tak dijemput, pulang minta ongkos GoRide." },
+            { nama: "Siluman Kera Putih", desc: "Lincah banget, kalau nyari barang yang hilang pasti dia yang nemuin duluan." },
+            { nama: "Jin Botol Kecap", desc: "Kalau dipanggil keluarnya pelan banget, harus ditepuk-tepuk pantatnya dulu." },
+            { nama: "Biksu Tong Pecicilan", desc: "Suka ngasi nasehat tapi dia sendiri gak pernah ngelakuin." },
+            { nama: "Kolor Ijo Kesempitan", desc: "Suka maksa masuk ke situasi yang sebenarnya bukan kapasitasnya." },
+            { nama: "Tiang Listrik Pinggir Jalan", desc: "Kokoh, kuat, tapi sering ditabrak orang mabuk." },
+            { nama: "Polisi Tidur Ketinggian", desc: "Kehadirannya bikin orang kesel dan merusak suspensi kehidupan." },
+            { nama: "Angkot Ngetem", desc: "Suka bikin orang nunggu lama tanpa kepastian yang jelas." },
+            { nama: "Helm Bogo Kaca Baret", desc: "Pandangannya buram terhadap masa depan, tapi gayanya tetep skena." },
+            { nama: "Jaket Ojol Bau Matahari", desc: "Pekerja keras yang berjuang demi cuan, tahan banting." },
+            { nama: "Kunci Motor Ketinggalan di Jok", desc: "Ceroboh tingkat dewa, sering bikin repot diri sendiri." },
+            { nama: "Wiper Mobil Bunyi Kriet", desc: "Suka protes kalau disuruh membersihkan masalah." },
+            { nama: "Spion Motor Cuma Sebelah", desc: "Cuma bisa lihat masa lalu dari satu sudut pandang aja." },
+            { nama: "Pintu Indomaret Bunyi 'Selamat Datang'", desc: "Ramah banget ke semua orang, tapi sering diabaikan." },
+            { nama: "Kursi Kondangan Plastik", desc: "Kelihatan ringkih tapi mampu menahan beban berat kehidupan." },
+            { nama: "Flashdisk Isi Virus", desc: "Kelihatannya bermanfaat, tapi aslinya merusak mental orang dari dalam." },
+            { nama: "Sinyal E (Edge)", desc: "Lambat banget kalau disuruh mikir, sering bikin orang frustasi." },
+            { nama: "Password Wifi Tetangga", desc: "Sangat diinginkan banyak orang tapi dirahasiakan ketat." },
+            { nama: "Grup WA Keluarga", desc: "Sumber hoaks dan ucapan selamat pagi yang tiada henti." },
+            { nama: "Status WA Galau", desc: "Capernya tingkat dewa, pengen banget ditanyain 'kenapa?'." },
+            { nama: "Tugas Kelompok Numpang Nama", desc: "Gak kerja apa-apa tapi ikut dapet nilai bagus." },
+            { nama: "Dosen Pembimbing Ghosting", desc: "Suka ngasih revisi terus ngilang berbulan-bulan." },
+            { nama: "Skripsi Bab 4", desc: "Bagian paling berat dalam hidup yang rasanya pengen di-skip aja." },
+            { nama: "Pulpen Macet Pas Ujian", desc: "Suka berkhianat di saat-saat paling genting." },
+            { nama: "Tipe-X Kering", desc: "Udah dikocok-kocok tapi tetep gak bisa memperbaiki kesalahan masa lalu." },
+            { nama: "Kaos Partai Luntur", desc: "Cuma dipakai pas tidur karena bahannya panas." },
+            { nama: "Celana Kolor Bolong Tengah", desc: "Nyaman dipakai walau sebenarnya memalukan kalau ketahuan." },
+            { nama: "Kemeja Flanel Kotak-Kotak", desc: "Anaknya indie banget, kopi senja adalah jalan ninjanya." },
+            { nama: "Topi Kebalik", desc: "Sok asik dan sok keras, padahal aslinya mleyot." },
+            { nama: "Kacamata Bolong", desc: "Gaya doang, fungsi buat melindungi matanya gak ada." },
+            { nama: "Sepatu Putih Injek Becek", desc: "Niatnya mau tampil bersih tapi selalu apes kena kotoran." },
+            { nama: "Kaos Kaki Sebelah Beda Warna", desc: "Terlalu buru-buru jalani hidup sampai lupa hal-hal detail." },
+            { nama: "Dompet Kulit Isi Bon", desc: "Kelihatannya tebal dan kaya, padahal isinya cuma kenangan belanja." },
+            { nama: "Resleting Celana Turun Sendiri", desc: "Sering bikin malu di depan umum tanpa disadari." },
+            { nama: "Gesper Pramuka", desc: "Kedisiplinannya tinggi tapi penampilannya kaku." },
+            { nama: "Perasaan Yang Terpendam", desc: "Sakit rasanya, pengen diungkapin tapi takut merusak pertemanan." },
+            { nama: "Ekspektasi Terlalu Tinggi", desc: "Sering bikin jatuh sakit karena realita tak seindah bayangan." },
+            { nama: "Rindu Mantan", desc: "Datangnya tiba-tiba pas malam hari, bikin susah tidur." },
+            { nama: "Overthinking Jam 2 Pagi", desc: "Suka mikirin hal-hal yang gak mungkin terjadi sampai over." },
+            { nama: "Rencana Wacana", desc: "Cuma janji-janji manis ngajak nongkrong tapi gak pernah kejadian." },
+            { nama: "Motivasi Sesaat", desc: "Semangatnya cuma di awal doang, besoknya udah males lagi." },
+            { nama: "Penyesalan Beli Barang Online", desc: "Pas datang barangnya gak sesuai ekspektasi, ujung-ujungnya nyesel." },
+            { nama: "Janji Manis Buaya", desc: "Sering ngucapin 'aku gak bakal ninggalin kamu', besoknya ilang." },
+            { nama: "Niat Diet Mulai Besok", desc: "Slogan andalan setiap habis makan enak." },
+            { nama: "Dompet Tanggal Tua", desc: "Kering kerontang, cuma bisa bertahan hidup dari sedekah teman." },
+            { nama: "Telor Gulung Depan SD", desc: "Murah meriah, banyak minyak, tapi rasanya ngangenin." },
+            { nama: "Es Teh Plastik Diiket Karet", desc: "Kesegaran hakiki di tengah panasnya cobaan hidup." },
+            { nama: "Cilok Bumbu Kacang Sisa", desc: "Suka jadi rebutan di akhir-akhir." },
+            { nama: "Mie Instan Pake Nasi", desc: "Kombinasi mematikan buat perut, tapi kenyangnya juara." },
+            { nama: "Sate Usus Angkringan", desc: "Kecil-kecil cabe rawit, bikin ketagihan nambah terus." },
+            { nama: "Kopi Saset Guntingan Miring", desc: "Sering tumpah pas diseduh gara-gara ceroboh." },
+            { nama: "Nasi Padang Karet Dua", desc: "Porsinya barbar, siap memberikan energi kuli seharian." },
+            { nama: "Kerupuk Melempem", desc: "Udah gak ada gairah hidup, digigit alot." },
+            { nama: "Sambel Terasi Bikin Mules", desc: "Menyakitkan tapi tetep aja dimakan lagi dan lagi." },
+            { nama: "Gorengan Sisa Kemarin", desc: "Keras dan berminyak, bukti nyata dari kejamnya waktu." },
+            { nama: "Kalkulator Warung Sayur", desc: "Sangat teliti ngitung duit receh, pantang rugi serupiah pun." },
+            { nama: "Timbangan Posyandu", desc: "Sering bikin ibu-ibu panik melihat angka yang terus naik." },
+            { nama: "Sapu Lidi Patah", desc: "Udah gak maksimal fungsinya tapi masih aja dipakai." },
+            { nama: "Kemoceng Bulu Ayam Rontok", desc: "Niatnya bersihin debu malah nambahin sampah." },
+            { nama: "Gayung Bolong Bawahnya", desc: "Usahanya keras tapi hasilnya selalu bocor sia-sia." },
+            { nama: "Sikat Gigi Mekar", desc: "Harusnya udah pensiun tapi masih dipaksa membersihkan dosa-dosa." },
+            { nama: "Odol Digulung Sampe Tipis", desc: "Penuh perjuangan untuk mengeluarkan sisa-sisa potensi diri." },
+            { nama: "Gantungan Baju Kawat Patah", desc: "Kelihatan lemah tapi serbaguna buat buka pintu yang terkunci." },
+            { nama: "Jepit Jemuran Warna Warni", desc: "Suka bergelantungan memegang erat masalah orang lain." },
+            { nama: "Keset Kaki Welcome Luntur", desc: "Sering diinjak orang sebelum mereka masuk ke kehidupanmu." },
+
+            // --- 100 Variabel Baru (Tema Ngeselin & Bikin Kesel) ---
+            { nama: "Tukang Parkir Gaib", desc: "Pas datang ke minimarket gak ada, pas mau mundur tiba-tiba niup peluit." },
+            { nama: "Nyamuk Kuping", desc: "Nggak gigit, cuma muter-muter di deket telinga pas mau tidur nyenyak." },
+            { nama: "Temen Pinjem Duit", desc: "Pas minjem melas-melas, pas ditagih lebih galak dari rentenir." },
+            { nama: "Sinyal Hilang Pas Ngegame", desc: "Bikin kalah ranked, selalu muncul di momen krusial mau menang." },
+            { nama: "Typo di Chat Dosen", desc: "Bikin panik setengah mati dan auto minta maaf panjang lebar." },
+            { nama: "Notif Baterai 1%", desc: "Bikin jantungan pas lagi asik scroll TikTok belum di-save." },
+            { nama: "Kertas Nyangkut di Printer", desc: "Selalu terjadi pas buru-buru mau ngumpulin tugas." },
+            { nama: "Auto-Correct Bikin Malu", desc: "Ngetik apa jadinya apa, sering bikin salah paham parah." },
+            { nama: "Klakson Lampu Merah", desc: "Baru juga hijau sedetik udah diklaksonin dari belakang bertubi-tubi." },
+            { nama: "Tukang Spoiler Film", desc: "Suka merusak kesenangan orang lain tanpa rasa bersalah sedikitpun." },
+            { nama: "Ludah Kena Angin", desc: "Niat ngeludah elegan, malah balik kena muka sendiri." },
+            { nama: "Ujung Kuku Nyangkut di Baju", desc: "Bikin ngilu dan kesel seharian, mau digigit alot." },
+            { nama: "Resleting Nyangkut Kain", desc: "Bikin panik pas lagi kebelet ke WC dan butuh kecepatan penuh." },
+            { nama: "Air Mandi Mati Pas Sabunan", desc: "Bikin perih mata dan merenungi nasib di pojokan kamar mandi." },
+            { nama: "Buka Puasa Masih Lama", desc: "Suka ngeluh laper padahal baru jam 10 pagi." },
+            { nama: "Kuota Habis Pas Download 99%", desc: "Menimbulkan rasa sakit hati mendalam yang tak tertahankan." },
+            { nama: "Sendok Tenggelam di Kuah Baso", desc: "Harus ngorbanin jari jadi berminyak buat ngambilnya." },
+            { nama: "Bulu Mata Kelilipan", desc: "Susah diambil, dikucek makin perih, didiemin makin ganjel." },
+            { nama: "Gigit Lidah Sendiri", desc: "Lagi asik-asik ngunyah makanan enak malah kena azab instan." },
+            { nama: "Lupa Naruh Kacamata", desc: "Padahal lagi dipakai di atas kepala, tapi nyari keliling rumah." },
+            { nama: "Charger Longgar", desc: "Tersenggol nyamuk lewat aja langsung berhenti ngecas." },
+            { nama: "Earphone Kesangkut Gagang Pintu", desc: "Bikin telinga ketarik dan emosi sesaat sampai ubun-ubun." },
+            { nama: "Jari Kelingking Kepentok Meja", desc: "Rasa sakitnya nembus dimensi lain, mau nangis malu, ditahan sakit." },
+            { nama: "Bales Chat Cuma 'Y'", desc: "Bikin males ngelanjutin obrolan padahal kita udah ngetik panjang." },
+            { nama: "Pesan Ditarik di WA", desc: "Bikin overthinking dan penasaran 'dia ngetik apa ya tadi?'." },
+            { nama: "Alarm Dimatiin Terus Tidur Lagi", desc: "Percaya diri bisa bangun 5 menit lagi, berujung telat parah." },
+            { nama: "Temen Bilang 'Gue Kasih Tahu Gak Ya'", desc: "Terus ujung-ujungnya gak jadi cerita, ngeselin banget." },
+            { nama: "Tukang Cukur Kebablasan", desc: "Bilangnya potong rapi dikit, jadinya malah hampir botak." },
+            { nama: "Nginjek Air Pakai Kaos Kaki", desc: "Rasa jijik dan nggak nyaman yang hakiki, merusak mood seharian." },
+            { nama: "Plastik Es Mambo Susah Dibuka", desc: "Ujung-ujungnya digigit pakai gigi geraham sampai ngilu." },
+            { nama: "Flash Sale Habis Sedetik", desc: "Baru klik masukin keranjang, tiba-tiba muncul tulisan 'Habis Terjual'." },
+            { nama: "Gunting Kuku Tumpul", desc: "Bukannya motong kuku, malah bikin kuku pecah-pecah gak karuan." },
+            { nama: "Sisa Makanan Nyelip di Gigi", desc: "Disongkel pakai lidah gak bisa, dicariin tusuk gigi gak ketemu." },
+            { nama: "Ketombe Jatuh di Baju Hitam", desc: "Bikin malu kalau lagi ngobrol sama gebetan." },
+            { nama: "Buka Pintu Bunyi Ngiik", desc: "Niatnya mau pulang diam-diam biar gak ketahuan, eh malah membangunkan seisi rumah." },
+            { nama: "Korek Api Hilang di Tongkrongan", desc: "Barang gaib yang selalu raib setelah dipinjem sekali putaran." },
+            { nama: "Es Batu Kegedean di Gelas", desc: "Airnya dikit banget, sekali sedot langsung habis." },
+            { nama: "Sedotan Bocor Tengahnya", desc: "Disedot sekuat tenaga yang masuk cuma angin." },
+            { nama: "Tutup Botol Selai Susah Dibuka", desc: "Harus ngeluarin tenaga dalam sampai tangan merah." },
+            { nama: "Sol Sepatu Mangap", desc: "Setiap langkah bunyi 'plak plak', bikin dilihatin orang di jalan." },
+            { nama: "Ritsleting Tas Rusak Pas Penuh", desc: "Harus dipeluk tasnya biar barang-barangnya gak berceceran." },
+            { nama: "Tali Sepatu Lepas Terus", desc: "Baru diiket kenceng, 10 langkah kemudian udah lepas lagi." },
+            { nama: "Kabel Casan Kusut Pangkat Tiga", desc: "Bentuknya udah kayak mie instan belum direbus." },
+            { nama: "Remote TV Habis Baterai", desc: "Harus dipukul-pukul dulu ke meja biar nyala sebentar." },
+            { nama: "Iklan YouTube 2 Menit Gak Bisa di-Skip", desc: "Menghalangi adegan penting, bikin emosi pengen banting HP." },
+            { nama: "Kipas Angin Cuma Muter Gak Ada Anginnya", desc: "Berisik doang tapi gak ngasih kesejukan sama sekali." },
+            { nama: "Obat Pahit Susah Ditelan", desc: "Udah minum air segalon, obatnya masih nyangkut di tenggorokan." },
+            { nama: "Air Hujan Netes Tepat di Muka", desc: "Bocornya pas banget di atas kasur tempat kepala bersandar." },
+            { nama: "Jemuran Kehujanan", desc: "Baru aja ditinggal masuk 5 menit udah basah kuyup lagi." },
+            { nama: "Kucing Berak di Teras", desc: "Nggak ikut ngerawat, tapi disuruh bersihin ranjau daratnya." },
+            { nama: "Anjing Tetangga Menggonggong Tengah Malam", desc: "Ngeganggu jam tidur berharga dengan suara melengking." },
+            { nama: "Motor Mogok Pas Panas Terik", desc: "Harus dorong berkilo-kilo sambil keringetan seember." },
+            { nama: "Ban Bocor di Tengah Hutan", desc: "Panik, sepi, dan gak ada bengkel sejauh mata memandang." },
+            { nama: "Tukang Tambal Ban Tutup", desc: "Udah capek dorong nyari bengkel, pas nyampe malah libur." },
+            { nama: "Bensin Habis Pas Tanggal Tua", desc: "Ngasih kode kedap-kedip di speedometer bikin panik kantong." },
+            { nama: "Dompet Ketinggalan Pas Udah Makan", desc: "Momen paling awkward pas di kasir warteg." },
+            { nama: "Kasir Nanya 'Pulsanya Sekalian?' Pas Buru-buru", desc: "Udah telat masih aja disuruh dengerin promo." },
+            { nama: "Orang Belanja Lama di Depan Kasir", desc: "Nyari uang recehnya lama banget sampai kiamat." },
+            { nama: "Emak Manggil Pas Udah Pewe di Kasur", desc: "Baru aja narik selimut, langsung dapet tugas negara." },
+            { nama: "Disuruh Beli Gas Pas Hujan", desc: "Udah mager, gerimis, bawa gas berat pula." },
+            { nama: "Sandal Ketuker di Masjid", desc: "Datang bawa Swallow baru, pulang bawa sandal beda sebelah." },
+            { nama: "Sepatu Putih Basah Kena Becek", desc: "Niatnya mau pamer OOTD malah jadi gembel aesthetic." },
+            { nama: "Jaket Pinjeman Gak Dibalikin", desc: "Ditagih malah pura-pura lupa, akhirnya ikhlas dengan berat hati." },
+            { nama: "Buku Catatan Ilang Sebelum Ujian", desc: "Satu-satunya sumber ilmu lenyap begitu saja." },
+            { nama: "Flashdisk Minta Format", desc: "Isinya file skripsi semua, hancur sudah masa depan." },
+            { nama: "Laptop Blue Screen Pas Belum di-Save", desc: "Ingin rasanya teriak tapi apa daya tangan tak sampai." },
+            { nama: "Sinyal Wifi Silang Merah", desc: "Muncul pas lagi di tengah rapat atau kelas online penting." },
+            { nama: "Paket Data Kesedot Auto-Update", desc: "Tiba-tiba kuota habis buat update aplikasi yang gak pernah dipakai." },
+            { nama: "Baterai Habis Pas Mau Foto Bareng", desc: "Kehilangan momen berharga karena HP mati mendadak." },
+            { nama: "Foto Blur Pas Momen Sekali Seumur Hidup", desc: "Minta tolong orang fotoin, hasilnya muka gak kelihatan." },
+            { nama: "Mantan Pamer Pacar Baru", desc: "Sengaja lewat timeline padahal kita masih gagal move on." },
+            { nama: "Gebetan Jadian Sama Sahabat Sendiri", desc: "Definisi sakit tak berdarah yang paling nyata." },
+            { nama: "Di-Ghosting Pas Lagi Sayang-sayangnya", desc: "Hilang tanpa jejak kayak ditelan bumi." },
+            { nama: "Dicap Caper Pas Lagi Cerita Masalah", desc: "Butuh tempat curhat malah di-judge berlebihan." },
+            { nama: "Dijulidin Ibu-ibu Komplek", desc: "Baru keluar rumah udah jadi bahan gosip." },
+            { nama: "Saudara Nanya 'Kapan Nikah?'", desc: "Pertanyaan tahunan setiap lebaran yang bikin males kumpul keluarga." },
+            { nama: "Anak Kecil Lari-larian Nabrak Kaki", desc: "Emaknya diem aja, kita yang nahan kesel." },
+            { nama: "Orang Nyerobot Antrean", desc: "Udah antre panjang, tiba-tiba ada yang nyempil dari depan tanpa dosa." },
+            { nama: "Buka Kaleng Biskuit Isinya Perlengkapan Menjahit", desc: "Udah ngarep manis, dapetnya jarum sama benang." },
+            { nama: "Gorengan Dingin dan Alot", desc: "Digigit karet, dikunyah batu, ditelan nyangkut." },
+            { nama: "Nasi Keras di Pinggiran Magic Com", desc: "Kering dan tajam, bikin gusi berdarah." },
+            { nama: "Sambal Kepedesan Sampai Sakit Perut", desc: "Menyakitkan tapi penasaran pengen nyocol terus." },
+            { nama: "Makanan Enak Jatuh Belum 5 Menit", desc: "Mau diambil kotor, gak diambil sayang banget." },
+            { nama: "Teh Tawar Panas Pas Haus-hausnya", desc: "Bikin lidah melepuh dan haus gak hilang." },
+            { nama: "Sirup Habis Tinggal Airnya", desc: "Rasa hambar yang menyisakan kesedihan." },
+            { nama: "Es Krim Meleleh Netes di Tangan", desc: "Lengket, manis, disemutin, panik nyari tisu." },
+            { nama: "Debu Masuk Mata Pas Naik Motor", desc: "Bikin nangis sebelah dan dikira abis putus cinta." },
+            { nama: "Helm Bau Apek Kehujanan Berhari-hari", desc: "Dipakai bikin rambut bau got seharian." },
+            { nama: "Jas Hujan Sobek Pas Hujan Angin", desc: "Sama aja bohong, tetep basah kuyup sampai celana dalam." },
+            { nama: "Polisi Razia Pas STNK Ketinggalan", desc: "Jantung deg-degan kayak mau copot lihat plang kuning." },
+            { nama: "Denda Tilang Elektronik Nyasar ke Rumah", desc: "Surat cinta dari kepolisian yang merobek dompet." },
+            { nama: "Pajak Motor Nunggak Bertahun-tahun", desc: "Beban pikiran yang selalu ditunda-tunda." },
+            { nama: "Tukang Paket Nyasar Nanya Alamat", desc: "Ditelepon berkali-kali tapi tetep gak paham patokan jalan." },
+            { nama: "Paket COD Datang Pas Gak Ada Orang di Rumah", desc: "Bikin repot tetangga buat nalangin duitnya." },
+            { nama: "Promo Gratis Ongkir Syaratnya Minimal Belanja 1 Juta", desc: "Sama aja bohong, mending bayar ongkir 10 ribu." },
+            { nama: "Voucher Diskon Habis Sedetik Pas Mau Check Out", desc: "Ngetik PIN kelamaan dikit langsung gagal hemat." },
+            { nama: "Keranjang Shopee Penuh Tapi Gak Pernah di-Check Out", desc: "Cuma jadi pajangan angan-angan belaka." },
+            { nama: "Nabung Gak Pernah Kumpul, Kepake Terus", desc: "Niatnya buat masa depan, kepakainya buat jajan boba." },
+            { nama: "Gaji Numpang Lewat Doang Habis Buat Paylater", desc: "Tanggal 1 gajian, tanggal 2 udah miskin lagi." },
+            { nama: "Alarm HP Bunyi Nyaring di Hari Minggu Libur", desc: "Menghancurkan kenikmatan tidur pulas di hari libur." }
+        ];
+
+        function mulaiCek() {
+            const inputNama = document.getElementById('namaInput').value;
+            
+            if(inputNama.trim() === '') {
+                alert('Namanya diisi dulu dong, masa ghoib!');
+                return;
+            }
+
+            // Sembunyikan hasil lama & tampilkan loading
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Efek loading 2 detik biar deg-degan
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                
+                // Pilih khodam acak dari 200 daftar di atas
+                const randomIndex = Math.floor(Math.random() * daftarKhodam.length);
+                const khodamTerpilih = daftarKhodam[randomIndex];
+
+                // Tampilkan hasil
+                document.getElementById('namaUser').innerText = inputNama;
+                document.getElementById('hasilKhodam').innerText = khodamTerpilih.nama;
+                document.getElementById('deskripsiKhodam').innerText = khodamTerpilih.desc;
+                
+                document.getElementById('resultArea').style.display = 'block';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
